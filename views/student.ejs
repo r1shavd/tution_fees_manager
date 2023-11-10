@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title><%= data.name %> - Tution Fees Manager</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body>
+	<!-- The header -->
+	<nav  class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="/">Tution Fees Manager</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarSupportedContent">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<li class="nav-item">
+						<a class="nav-link active" aria-current="page" href="/?task=add">Add student</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link active" aria-current="page" href="/?task=recent_txn">Recent transactions</a>
+					</li>
+				</ul>
+				<form class="d-flex" role="search">
+					<input class="form-control me-2" type="search" placeholder="Search student" aria-label="Search">
+					<button class="btn btn-outline-success" type="submit">Search</button>
+				</form>
+			</div>
+		</div>
+	</nav>
+	<!--  -->
+
+	<!-- Student details -->
+	<div class="container-fluid" style="width: 95%; margin: 2.5%; border: 0.5px solid lightgray; border-radius: 5px; padding: 2.5%;">
+		<dl class="row">
+			<dt class="col-sm-3">Name</dt>
+			<dd class="col-sm-9"><%= data.name %></dd>
+			<dt class="col-sm-3">Class</dt>
+			<dd class="col-sm-9"><%= data.class %></dd>
+			<dt class="col-sm-3">Board</dt>
+			<dd class="col-sm-9"><%= data.board %></dd>
+		</dl>
+
+		<!-- Collapse buttons -->
+		<p class="d-inline-flex gap-1">
+			<a class="btn btn-danger" data-bs-toggle="collapse" href="#dltStudentForm" role="button" aria-expanded="false" aria-controls="dltStudentForm">
+				Delete student
+			</a>
+			<button class="btn btn-success" type="button" data-bs-toggle="collapse" data-bs-target="#addTransactionForm" aria-expanded="false" aria-controls="addTransactionForm">
+				Add new payment
+			</button>
+		</p>
+		<!--  -->
+
+		<!-- Delete student form -->
+		<form class="collapse" onclick="null;" id="dltStudentForm" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
+			<div class="mb-3">
+				<label for="" class="form-label">Enter "12345678" and press delete</label>
+				<input type="text" class="form-control" id="dltStudentFormInput" aria-describedby="check" placeholder="...">
+			</div>
+			<a class="btn btn-danger" id="dltStudentFormBtn">Delete</a>
+		</form>
+		<!--  -->
+
+		<!-- Form for adding a new transaction -->
+		<form id="addTransactionForm" class="collapse" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
+			<div class="mb-3">
+				<label for="addTransactionFormAmount" class="form-label">Amount</label>
+				<input type="number" class="form-control" id="addTransactionFormAmount" step="100" value="300">
+			</div>
+
+			<div class="mb-3">
+				<label for="monthInput" class="form-label form-label-sm">Which month?</label>
+				<select class="form-select form-select-sm" aria-label="Payment for month" id="addTransactionFormMonth">
+					<option selected value="1">January</option>
+					<option value="2">February</option>
+					<option value="3">March</option>
+					<option value="4">April</option>
+					<option value="5">May</option>
+					<option value="6">June</option>
+					<option value="7">July</option>
+					<option value="8">August</option>
+					<option value="9">September</option>
+					<option value="10">October</option>
+					<option value="11">November</option>
+					<option value="12">December</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label for="addTransactionFormYear" class="form-label form-label-sm">Which year?</label>
+				<select class="form-select form-select-sm" aria-label="Default select example" id="addTransactionFormYear">
+					<option value="2023">2023</option>
+					<option value="2024" selected>2024</option>
+					<option value="2025">2025</option>
+				</select>
+			</div>
+			<a class="btn btn-success" id="addTransactionFormBtn">Submit</a>
+		</form>
+		<!--  -->
+	</div>
+	<!--  -->
+
+	<!-- Transaction details -->
+	<table class="table" style="width: 95%; margin: 2.5%; border: 0.5px solid lightgray; border-radius: 5px;">
+		<thead>
+			<tr>
+				<th scope="col">Txn Id</th>
+				<th scope="col">Amount</th>
+				<th scope="col">Month</th>
+				<th scope="col">Year</th>
+				<th scope="col">Paid on</th>
+			</tr>
+		</thead>
+		<tbody>
+			<% for (let i = 0; i < data.transactions.length; i++) { %>
+			<tr>
+				<th scope="row"><%= data.transactions[i].id %></th>
+				<td><%= data.transactions[i].amount %></td>
+				<td><%= data.transactions[i].month %></td>
+				<td><%= data.transactions[i].year %></td>
+				<td><%= data.transactions[i].payment_date %></td>
+			</tr>
+			<% } %>
+		</tbody>
+	</table>
+	<!--  -->
+
+	<!-- Scripts requried for boostrap -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+	<!--  -->
+</body>
+
+<script type="text/javascript">
+	// The required vanillaJS
+	//
+	// The student Id required var
+	const student_id = "<%= data.student_id %>";
+
+	// Defining the addTransactionFormBtn onclick event listener
+	document.getElementById("addTransactionFormBtn").addEventListener("click", () => {
+		// Getting the details
+		const amount = document.getElementById("addTransactionFormAmount").value;
+		const month = document.getElementById("addTransactionFormMonth").value;
+		const year = document.getElementById("addTransactionFormYear").value;
+
+		// Sending the POST HTTP request to the server
+		fetch("/add", {
+			method: "POST",
+			body: JSON.stringify({
+				task: "transaction", student_id: student_id, amount: amount, month: month, year: year
+			}),
+			headers: {"Content-type": "application/json; charset=UTF-8"},
+		}).then(response => {
+			alert("Transaction added!");
+		}).catch(error => {
+			// If there occurs an error
+			console.log(error);
+		});
+	});
+
+	// Defining the dltStudentFormBtn onclick event listener
+	document.getElementById("dltStudentFormBtn").addEventListener("click", () => {
+		// Checking the entered captcha
+		if (document.getElementById("dltStudentFormInput").value == "12345678") {
+			// Continuing with the deletion
+			// Sending the HTTP POST request to the server
+			fetch("/delete", {
+				method: "POST",
+				body: JSON.stringify({
+					task: "student", student_id: student_id,
+				}),
+				headers: {"Content-type": "application/json; charset=UTF-8"},
+			}).then(response => {
+				alert("Student named '" + "<%= data.name %>" + "' deleted!");
+				window.location = '/'; // Redirecting to the home page
+			}).catch(error => {
+				// If there occurs an error
+				console.log(error);
+			})
+		} else {
+			// Captcha verification failed
+			alert("Incorrect captcha");
+		}
+	});
+</script>
+
+</html>
