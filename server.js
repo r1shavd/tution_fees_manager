@@ -149,8 +149,8 @@ app.post("/delete", (request, response) => {
 		});
 	} else if (request.body.task == "transaction") {
 		// Removing the requested transaction
-		const txn_id = request.body.txn_id;
-		DbConn.run("DELETE FROM transactions where id = ?", [txn_id], (error) => {
+		const transaction_id = request.body.transaction_id;
+		DbConn.run("DELETE FROM transactions where id = ?", [transaction_id], (error) => {
 			if (error) {
 				// If there occurs an error
 				return response.end(error.message);

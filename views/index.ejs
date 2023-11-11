@@ -93,7 +93,8 @@
 		// Fetching the form data
 		const student_name = document.getElementById("addStudentFormName").value;
 		const student_class = document.getElementById("addStudentFormClass").value;
-		const student_board = document.getElementById("addStudentFormBoard").value;
+		let student_board = document.getElementById("addStudentFormBoard");
+		student_board = student_board.options[student_board.selectedIndex].innerHTML; // Getting the value selected by the user in the drop down list
 
 		// Sending the POST HTTP request to the server
 		fetch("/add", {

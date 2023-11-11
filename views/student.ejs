@@ -17,10 +17,10 @@
 			<div class="collapse navbar-collapse" id="navbarSupportedContent">
 				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 					<li class="nav-item">
-						<a class="nav-link active" aria-current="page" href="/?task=add">Add student</a>
+						<a class="nav-link active" aria-current="page" href="/#addStudentForm">Add student</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link active" aria-current="page" href="/?task=recent_txn">Recent transactions</a>
+						<a class="nav-link disabled" aria-current="page" href="/#recentTransaction">Recent transactions</a>
 					</li>
 				</ul>
 				<form class="d-flex" role="search">
@@ -106,25 +106,35 @@
 	<table class="table" style="width: 95%; margin: 2.5%; border: 0.5px solid lightgray; border-radius: 5px;">
 		<thead>
 			<tr>
-				<th scope="col">Txn Id</th>
 				<th scope="col">Amount</th>
 				<th scope="col">Month</th>
 				<th scope="col">Year</th>
 				<th scope="col">Paid on</th>
+				<th scope="col">    </th>
 			</tr>
 		</thead>
 		<tbody>
 			<% for (let i = 0; i < data.transactions.length; i++) { %>
 			<tr>
-				<th scope="row"><%= data.transactions[i].id %></th>
 				<td><%= data.transactions[i].amount %></td>
 				<td><%= data.transactions[i].month %></td>
 				<td><%= data.transactions[i].year %></td>
 				<td><%= data.transactions[i].payment_date %></td>
+				<td><a class="btn btn-danger" onclick="showDltTransactionFormFn(<%= data.transactions[i].id %>);alert('Scroll down and delete.');">Delete</a></td>
 			</tr>
 			<% } %>
 		</tbody>
 	</table>
+	<!--  -->
+
+	<!-- The form for transaction deletion -->
+	<% if (data.transactions.length != 0) { %>
+	<form class="container" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px;">
+		<label class="form-label" for="dltTransactionFormInput">Enter "12345678" and press delete</label>
+		<input class="form-control" type="text" placeholder="..." aria-label="captcha" id="dltTransactionFormInput">
+		<a class="btn btn-danger" id="dltTransactionFormBtn">Delete</a>
+	</form>
+	<% } %>
 	<!--  -->
 
 	<!-- Scripts requried for boostrap -->
@@ -147,6 +157,8 @@
 		const month = document.getElementById("addTransactionFormMonth").value;
 		const year = document.getElementById("addTransactionFormYear").value;
 
+		console.log("clicked");
+
 		// Sending the POST HTTP request to the server
 		fetch("/add", {
 			method: "POST",
@@ -156,6 +168,7 @@
 			headers: {"Content-type": "application/json; charset=UTF-8"},
 		}).then(response => {
 			alert("Transaction added!");
+			window.location.reload();
 		}).catch(error => {
 			// If there occurs an error
 			console.log(error);
@@ -183,9 +196,41 @@
 			})
 		} else {
 			// Captcha verification failed
-			alert("Incorrect captcha");
+			alert("Incorrect captcha!");
 		}
 	});
+
+	// Function for showing the dltTransactionForm
+	let transactionToBeDeleted = null;
+	const showDltTransactionFormFn = (transaction_id) => {
+		// When the button is clicked
+		transactionToBeDeleted = transaction_id;
+	}
+
+	// Defining the dltTransactionFormBtn onclick event listener
+	document.getElementById("dltTransactionFormBtn").addEventListener("click", () => {
+		// Checking the captcha
+		console.log(document.getElementById("dltTransactionFormInput").value);
+		if (document.getElementById("dltTransactionFormInput").value == "12345678") {
+			// Sending the HTTP POST request
+			fetch("/delete", {
+				method: "POST",
+				body: JSON.stringify({
+					task: "transaction", transaction_id: transactionToBeDeleted,
+				}),
+				headers: {"Content-type": "application/json; charset=UTF-8"},
+			}).then(response => {
+				alert("Transaction-" + transactionToBeDeleted + " deleted!");
+				window.location.reload();
+			}).catch(error => {
+				// If there occurs an error
+				console.log(error);
+			});
+		} else {
+			alert("Incorrect captcha!");
+		}
+	});
+
 </script>
 
 </html>
