@@ -80,6 +80,13 @@ app.get("/student", (request, response) => {
 						} else {
 							// Displaying the information
 							data.transactions = row.reverse();
+
+							// Converting the month names from numeric to text
+							let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+							for (let i = 0; i < data.transactions.length; i++) {
+								data.transactions[i].month = months[data.transactions[i].month-1];
+							}
+
 							return response.render("student", {data : data});
 						}
 					});
@@ -99,12 +106,28 @@ app.post("/add", (request, response) => {
 		let student_class = request.body.student_class;
 		let student_board = request.body.student_board;
 
-		// Inserting into the database
-		DbConn.run("INSERT INTO students (name, class, board) VALUES (?, ?, ?)", [student_name, student_class, student_board], (error) => {
+		// Checking if the same student already exists
+		DbConn.get("SELECT * FROM students WHERE name = ? AND class = ? AND board = ?", [student_name, student_class, student_board], (error, row) => {
 			if (error) {
-				return response.end(error.message);
+				// If there occurs an error
+				response.status(500);
+				return response.end("Database error!");
 			} else {
-				return response.end("true");
+				if (row != undefined) {
+					// If the student already exists
+					response.status(403);
+					return response.end("Student already exists!")
+				} else {
+					// Inserting into the database if the student doesnt exists
+					DbConn.run("INSERT INTO students (name, class, board) VALUES (?, ?, ?)", [student_name, student_class, student_board], (error) => {
+						if (error) {
+							// If there occurs an error
+							return response.end(error.message);
+						} else {
+							return response.end("Student '" + student_name + "' added!");
+						}
+					});
+				}
 			}
 		});
 	} else if (request.body.task == "transaction") {
@@ -114,16 +137,32 @@ app.post("/add", (request, response) => {
 		let month = request.body.month;
 		let year = request.body.year;
 
-		// Inserting into the database
-		DbConn.run("INSERT INTO transactions (student_id, amount, month, year) VALUES (?, ?, ?, ?)", [student_id, amount, month, year], (error) => {
+		// Checking if the transaction already exists
+		DbConn.get("SELECT * FROM transactions WHERE student_id = ? AND month = ? AND year = ?", [student_id, month, year], (error, row) => {
 			if (error) {
-				return response.end(error.message);
+				// If there exists an error
+				response.status(500);
+				return response.end("Database error!");
 			} else {
-				return response.end("true");
+				if (row != undefined) {
+					// If the student exists
+					response.status(403);
+					return response.end("Transaction already exists!");
+				} else {
+					// Inserting into the database
+					DbConn.run("INSERT INTO transactions (student_id, amount, month, year) VALUES (?, ?, ?, ?)", [student_id, amount, month, year], (error) => {
+						if (error) {
+							return response.end(error.message);
+						} else {
+							return response.end("true");
+						}
+					});
+				}
 			}
 		});
 	} else {
-		return response.end("false");
+		response.status(403);
+		return response.end("No task mentioned!");
 	}
 });
 //
@@ -135,12 +174,15 @@ app.post("/delete", (request, response) => {
 		DbConn.run("DELETE FROM students WHERE id = ?", [student_id], (error) => {
 			if (error) {
 				// If there occurs an error
-				return response.end(error.message);
+				response.status(500);
+				return response.end("Database error!");
 			} else {
 				// Deleting all the transactions history for the requested student
 				DbConn.run("DELETE FROM transactions WHERE student_id = ?", [student_id], (error) => {
 					if (error) {
-						return response.end(error.message);
+						// If there occurs an error
+						response.end(500);
+						return response.end("Database error!");
 					} else {
 						return response.end("true");
 					}
@@ -153,7 +195,8 @@ app.post("/delete", (request, response) => {
 		DbConn.run("DELETE FROM transactions where id = ?", [transaction_id], (error) => {
 			if (error) {
 				// If there occurs an error
-				return response.end(error.message);
+				response.status(500);
+				return response.end("Database error!");
 			} else {
 				return response.end("true");
 			}

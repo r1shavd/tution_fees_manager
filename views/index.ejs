@@ -96,6 +96,16 @@
 		let student_board = document.getElementById("addStudentFormBoard");
 		student_board = student_board.options[student_board.selectedIndex].innerHTML; // Getting the value selected by the user in the drop down list
 
+		// Validating the user input
+		if (student_name.length < 5) {
+			alert("Invalid student name!");
+			return;
+		}
+		if (student_class < 0 || student_class > 12) {
+			alert("Invalid student class!");
+			return;
+		}
+
 		// Sending the POST HTTP request to the server
 		fetch("/add", {
 			method: "POST",
@@ -104,11 +114,12 @@
 			}),
 			headers: {"Content-type": "application/json; charset=UTF-8"},
 		}).then(response => {
-			alert("New student added!");
+			(response.status == 200) ? alert("Student named " + student_name + " added!") : alert("Student already exists!");
 			window.location.reload(); // Reloading the current page
 		}).catch(error => {
 			// If there occurs an error
-			console.log(error);
+			alert(error);
+			window.location.reload();
 		});
 	});
 </script>

@@ -56,6 +56,8 @@
 
 		<!-- Delete student form -->
 		<form class="collapse" onclick="null;" id="dltStudentForm" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
+			<h5>Student deletion confirmation!</h5>
+			<hr>
 			<div class="mb-3">
 				<label for="" class="form-label">Enter "12345678" and press delete</label>
 				<input type="text" class="form-control" id="dltStudentFormInput" aria-describedby="check" placeholder="...">
@@ -66,6 +68,8 @@
 
 		<!-- Form for adding a new transaction -->
 		<form id="addTransactionForm" class="collapse" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
+			<h5>Transaction add form!</h5>
+			<hr>
 			<div class="mb-3">
 				<label for="addTransactionFormAmount" class="form-label">Amount</label>
 				<input type="number" class="form-control" id="addTransactionFormAmount" step="100" value="300">
@@ -130,6 +134,8 @@
 	<!-- The form for transaction deletion -->
 	<% if (data.transactions.length != 0) { %>
 	<form class="container" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px;">
+		<h5>Transaction deletion confirmation!</h5>
+		<hr>
 		<label class="form-label" for="dltTransactionFormInput">Enter "12345678" and press delete</label>
 		<input class="form-control" type="text" placeholder="..." aria-label="captcha" id="dltTransactionFormInput">
 		<a class="btn btn-danger" id="dltTransactionFormBtn">Delete</a>
@@ -157,7 +163,15 @@
 		const month = document.getElementById("addTransactionFormMonth").value;
 		const year = document.getElementById("addTransactionFormYear").value;
 
-		console.log("clicked");
+		// Validating the user input
+		if (month < 1 || month > 13) {
+			alert("Invalid month input!");
+			return;
+		}
+		if (amount < 100) {
+			alert("Invalid amount input!");
+			return;
+		}
 
 		// Sending the POST HTTP request to the server
 		fetch("/add", {
@@ -167,11 +181,12 @@
 			}),
 			headers: {"Content-type": "application/json; charset=UTF-8"},
 		}).then(response => {
-			alert("Transaction added!");
-			window.location.reload();
+			(response.status == 200) ? alert("Transaction added!") : alert("Failed to add the transaction. Check if it already exists.");
+			window.location.reload(); // Reloading the current page
 		}).catch(error => {
 			// If there occurs an error
-			console.log(error);
+			alert(error);
+			window.location.reload();
 		});
 	});
 
@@ -188,12 +203,13 @@
 				}),
 				headers: {"Content-type": "application/json; charset=UTF-8"},
 			}).then(response => {
-				alert("Student named '" + "<%= data.name %>" + "' deleted!");
-				window.location = '/'; // Redirecting to the home page
+				(response.status == 200) ? alert("Student named <%= data.name %> deleted!") : alert("Failed to delete the student!");
+				window.location.reload();
 			}).catch(error => {
 				// If there occurs an error
-				console.log(error);
-			})
+				alert(error);
+				window.location.reload();
+			});
 		} else {
 			// Captcha verification failed
 			alert("Incorrect captcha!");
@@ -210,7 +226,6 @@
 	// Defining the dltTransactionFormBtn onclick event listener
 	document.getElementById("dltTransactionFormBtn").addEventListener("click", () => {
 		// Checking the captcha
-		console.log(document.getElementById("dltTransactionFormInput").value);
 		if (document.getElementById("dltTransactionFormInput").value == "12345678") {
 			// Sending the HTTP POST request
 			fetch("/delete", {
@@ -220,11 +235,12 @@
 				}),
 				headers: {"Content-type": "application/json; charset=UTF-8"},
 			}).then(response => {
-				alert("Transaction-" + transactionToBeDeleted + " deleted!");
+				(response.status == 200) ? alert("Transaction deleted!") : alert("Failed to delete the transaction!");
 				window.location.reload();
 			}).catch(error => {
 				// If there occurs an error
-				console.log(error);
+				alert(error);
+				window.location.reload();
 			});
 		} else {
 			alert("Incorrect captcha!");
