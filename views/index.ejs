@@ -20,7 +20,7 @@
 						<a class="nav-link active" aria-current="page" href="#addStudentForm">Add student</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link disabled" aria-current="page" href="#recentTransaction">Recent transactions</a>
+						<a class="nav-link active" aria-current="page" href="#recentTransaction">Recent transactions</a>
 					</li>
 				</ul>
 				<form class="d-flex" role="search">
@@ -34,16 +34,16 @@
 
 	<!-- Displaying the students -->
 	<div class="container-fluid" style="padding: 10px" id="studentListContainer">
-		<% if (data.length == 0) { %>
+		<% if (data.students.length == 0) { %>
 		<p> There are no students added, add a new student using the form below.</p>
 		<% } else { %>
 		<center>
-			<% for (let i = 0; i < data.length; i++) { %>
+			<% for (let i = 0; i < data.students.length; i++) { %>
 			<div class="card" style="width: 95%; padding: 0px; margin-bottom: 10px;">
 				<div class="card-body">
-					<h5 class="card-title"><%= data[i].name %></h5>
-					<p class="card-text">Class <%= data[i].class %>, <%= data[i].board %> </p>
-					<a href="/student/?id=<%= data[i].id %>" class="btn btn-primary">View</a>
+					<h5 class="card-title"><%= data.students[i].name %></h5>
+					<p class="card-text">Class <%= data.students[i].class %>, <%= data.students[i].board %> </p>
+					<a href="/student/?id=<%= data.students[i].id %>" class="btn btn-primary">View</a>
 				</div>
 			</div>
 			<% } %>
@@ -63,7 +63,7 @@
 			</div>
 			<div class="mb-3">
 				<label for="addStudentFormClass" class="form-label">Class</label>
-				<input type="number" class="form-control" id="addStudentFormClass" step="1" value="5" max="12" min="-3">
+				<input type="number" class="form-control" id="addStudentFormClass" step="1" value="5" max="12" min="0">
 			</div>
 			<div class="mb-3">
 				<label for="addStudentFormBoard" class="form-label">Board</label>
@@ -79,6 +79,40 @@
 	</div>
 	<!--  -->
 
+	<!-- Recent transactions -->
+	<div class="container-fluid" style="width: 95%; margin: 2.5%; border: 0.5px solid lightgray; border-radius: 5px; padding: 10px;">
+		<h5>Recent 10 transactions</h5>
+		<% if (data.recent_transactions.length == 0) { %>
+		<p>No any recent transactions</p>
+		<% } else { %>
+		<table class="table">
+		<thead>
+			<tr>
+				<th scope="col">Month</th>
+				<th scope="col">Year</th>
+				<th scope="col">Paid on</th>
+				<th scope="col">Paid by </th>
+			</tr>
+		</thead>
+		<tbody>
+			<% for (let i = 0; i < data.recent_transactions.length; i++) { %>
+			<tr>
+				<td><%= data.recent_transactions[i].month %></td>
+				<td><%= data.recent_transactions[i].year %></td>
+				<td><%= data.recent_transactions[i].payment_date %></td>
+				<td><% for (let j = 0; j < data.students.length; j++) { %>
+					<% if (data.recent_transactions[i].student_id == data.students[j].id) { %>
+					<%= data.students[j].name %>
+					<% }} %>
+				</td>
+			</tr>
+			<% } %>
+		</tbody>
+		</table>
+		<% } %>
+	</div>
+	<!--  -->
+
 	<!-- Scripts requried for boostrap -->
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
@@ -91,7 +125,7 @@
 	//
 	document.getElementById("addStudentFormBtn").addEventListener("click", () => {
 		// Fetching the form data
-		const student_name = document.getElementById("addStudentFormName").value;
+		let student_name = document.getElementById("addStudentFormName").value;
 		const student_class = document.getElementById("addStudentFormClass").value;
 		let student_board = document.getElementById("addStudentFormBoard");
 		student_board = student_board.options[student_board.selectedIndex].innerHTML; // Getting the value selected by the user in the drop down list
@@ -105,6 +139,13 @@
 			alert("Invalid student class!");
 			return;
 		}
+
+		// Auto-capitalizing the student name input
+		student_name = student_name.split(" ");
+		for (let i = 0; i < student_name.length; i++) {
+			student_name[i] = (student_name[i].charAt(0).toUpperCase() + student_name[i].slice(1).toLowerCase());
+		}
+		student_name = student_name.join(" ");
 
 		// Sending the POST HTTP request to the server
 		fetch("/add", {

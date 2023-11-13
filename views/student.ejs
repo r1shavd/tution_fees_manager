@@ -20,7 +20,7 @@
 						<a class="nav-link active" aria-current="page" href="/#addStudentForm">Add student</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link disabled" aria-current="page" href="/#recentTransaction">Recent transactions</a>
+						<a class="nav-link active" aria-current="page" href="/#recentTransaction">Recent transactions</a>
 					</li>
 				</ul>
 				<form class="d-flex" role="search">
@@ -48,14 +48,17 @@
 			<a class="btn btn-danger" data-bs-toggle="collapse" href="#dltStudentForm" role="button" aria-expanded="false" aria-controls="dltStudentForm">
 				Delete student
 			</a>
-			<button class="btn btn-success" type="button" data-bs-toggle="collapse" data-bs-target="#addTransactionForm" aria-expanded="false" aria-controls="addTransactionForm">
+			<a class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#editStudentForm" aria-expanded="false" aria-controls="editStudentForm">
+				Edit student info
+			</a>
+			<a class="btn btn-success" type="button" data-bs-toggle="collapse" data-bs-target="#addTransactionForm" aria-expanded="false" aria-controls="addTransactionForm">
 				Add new payment
-			</button>
+			</a>
 		</p>
 		<!--  -->
 
 		<!-- Delete student form -->
-		<form class="collapse" onclick="null;" id="dltStudentForm" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
+		<form class="collapse" id="dltStudentForm" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
 			<h5>Student deletion confirmation!</h5>
 			<hr>
 			<div class="mb-3">
@@ -63,6 +66,31 @@
 				<input type="text" class="form-control" id="dltStudentFormInput" aria-describedby="check" placeholder="...">
 			</div>
 			<a class="btn btn-danger" id="dltStudentFormBtn">Delete</a>
+		</form>
+		<!--  -->
+
+		<!-- Student info edit form -->
+		<form class="collapse" id="editStudentForm" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
+			<h5>Edit student information</h5>
+			<hr>
+			<div class="mb-3">
+				<label for="editStudentFormName" class="form-label">Student's name</label>
+				<input type="email" class="form-control" id="editStudentFormName" aria-describedby="editStudentFormName" placeholder="<%= data.name %>">
+			</div>
+			<div class="mb-3">
+				<label for="editStudentFormClass" class="form-label">Class</label>
+				<input type="number" class="form-control" id="editStudentFormClass" step="1" value="<%= data.class %>" max="12" min="0">
+			</div>
+			<!-- <div class="mb-3">
+				<label for="editStudentFormBoard" class="form-label">Board</label>
+				<select class="form-select form-select-sm" aria-label="Student's Board" id="editStudentFormBoard">
+					<option value="1">CBSE</option>
+					<option value="2">ICSE</option>
+					<option value="3">JAC</option>
+					<option value="3">OTHER</option>
+				</select>
+			</div> -->
+			<a class="btn btn-success" id="editStudentFormBtn">Add student</a>
 		</form>
 		<!--  -->
 
@@ -133,12 +161,12 @@
 
 	<!-- The form for transaction deletion -->
 	<% if (data.transactions.length != 0) { %>
-	<form class="container" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px;">
+	<form class="container" id="dltTransactionForm" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px; display: none;">
 		<h5>Transaction deletion confirmation!</h5>
 		<hr>
 		<label class="form-label" for="dltTransactionFormInput">Enter "12345678" and press delete</label>
 		<input class="form-control" type="text" placeholder="..." aria-label="captcha" id="dltTransactionFormInput">
-		<a class="btn btn-danger" id="dltTransactionFormBtn">Delete</a>
+		<a class="btn btn-danger" id="dltTransactionFormBtn" style="margin-top: 10px;">Delete</a>
 	</form>
 	<% } %>
 	<!--  -->
@@ -221,6 +249,7 @@
 	const showDltTransactionFormFn = (transaction_id) => {
 		// When the button is clicked
 		transactionToBeDeleted = transaction_id;
+		document.getElementById("dltTransactionForm").style.display = "block"; // Dispalying the dltTransactionForm on the screen
 	}
 
 	// Defining the dltTransactionFormBtn onclick event listener
@@ -247,6 +276,54 @@
 		}
 	});
 
+	// Defining the javascript for the editStudentForm
+	// Default selection of the current board of the student (CURRENTLY NOT ADDING THE FEATURE TO CHANGE THE BOARD OF THE STUDENT)
+	// document.getElementById("editStudentFormBoard").selected
+	//
+	// Setting the default values for names and class
+	document.getElementById("editStudentFormName").value = "<%= data.name %>";
+	document.getElementById("editStudentFormClass").value = Number("<%= data.class %>");
+	//
+	// Setting the onclick event listener for the editStudentFormBtn
+	document.getElementById("editStudentFormBtn").addEventListener("click", () => {
+		// Fetching the form data
+		let student_name = document.getElementById("editStudentFormName").value;
+		const student_class = document.getElementById("editStudentFormClass").value;
+		let student_board = "<%= data.board %>";
+
+		// Validating the user input
+		if (student_name.length < 5) {
+			alert("Invalid student name!");
+			return;
+		}
+		if (student_class < 0 || student_class > 12) {
+			alert("Invalid student class!");
+			return;
+		}
+
+		// Auto-capitalizing the student name input
+		student_name = student_name.split(" ");
+		for (let i = 0; i < student_name.length; i++) {
+			student_name[i] = (student_name[i].charAt(0).toUpperCase() + student_name[i].slice(1).toLowerCase());
+		}
+		student_name = student_name.join(" ");
+
+		// Sending the POST HTTP request to the server
+		fetch("/edit", {
+			method: "POST",
+			body: JSON.stringify({
+				task: "student", student_id : "<%= data.student_id %>", student_name: student_name, student_class: student_class, student_board: student_board,
+			}),
+			headers: {"Content-type": "application/json; charset=UTF-8"},
+		}).then(response => {
+			(response.status == 200) ? alert("Student info edited!") : alert("Failed to edit!");
+			window.location.reload(); // Reloading the current page
+		}).catch(error => {
+			// If there occurs an error
+			alert(error);
+			window.location.reload();
+		});
+	});
 </script>
 
 </html>

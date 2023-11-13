@@ -15,11 +15,21 @@ const Sqlite3 = require("sqlite3");
 // Creating the express app and defining its properties
 const app = Express()
 app.set("view engine", "ejs");
-// app.use(Express.static("scripts")); // Uncomment when having an additional scripts/ directory for JS and CSS files
 app.use(BodyParser.urlencoded({ extended: true }));
 app.use(BodyParser.json());
 
+// Configuring the app to use the Bootstrap npm module for offline support (CURRENTLY THE BOOTSTRAP JAVASCRIPT FILES HAVE MIME-TYPE ERROR)
+// app.use("/bootstrap/css", Express.static("node_modules/bootstrap/dist/css"));
+// app.use("/bootsrap/js", Express.static("node_modules/bootstrap/dist/js"));
+// app.use("/bootstrap/js", Express.static("node_modules/jquery/dist"));
+// app.use("/bootstrap/popper/", Express.static("node_modules/@popperjs/core/dist/umd/"));
+
 // Connecting the app to database
+/*
+Database tables and their schema :
+1. students (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), class INTEGER, board VARCHAR(10))
+2. transactions ( id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER, amount INTEGER, month INTEGER, year INTEGER, payment_date DATETIME DEFAULT CURRENT_TIMESTAMP)
+*/
 const DbConn = new Sqlite3.Database("database.db", (error) => {
 	if (error) {
 		// If there occurs any error
@@ -39,10 +49,32 @@ app.get('/', (request, response) => {
 	DbConn.all("SELECT * FROM students", [], (error, row) => {
 		if (error) {
 			// If there occured an error during the process
-			return response.status(400).json({"error" : error.message});
+			response.status(500);
+			return response.end("Database error!");
 		} else {
-			// If there occurs no error
-			return response.render('index', {data : row});
+			let data = {
+				students : row,
+				recent_transactions: [],
+			};
+
+			// Fetching the recent 10 transactions
+			DbConn.all("SELECT student_id, month, year, payment_date FROM transactions ORDER BY payment_date LIMIT 10", (error, row) => {
+				if (error) {
+					// If there occurs an error
+					response.status(500);
+					return response.end("Database error!");
+				} else {
+					// Returning the filtered data back to the user
+					data['recent_transactions'] = row;
+
+					// Converting the month names from numeric to text
+					let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+					for (let i = 0; i < data.recent_transactions.length; i++) {
+						data.recent_transactions[i].month = months[data.recent_transactions[i].month-1];
+					}
+					return response.render("index", {data : data});
+				}
+			});
 		}
 	});
 });
@@ -58,7 +90,8 @@ app.get("/student", (request, response) => {
 		DbConn.get("SELECT * FROM students WHERE id = ?", [student_id], (error, row) => {
 			if (error) {
 				// If there occured an error during the process
-				return response.status(400).json({"error" : error.message});
+				response.status(500);
+				return response.end("Database error!");
 			} else {
 				// If there occurs no error
 				if (row == undefined) {
@@ -76,7 +109,8 @@ app.get("/student", (request, response) => {
 					DbConn.all("SELECT * FROM transactions WHERE student_id = ?", [student_id], (error, row) => {
 						if (error) {
 							// If there occured an error
-							return response.status(400).json({"error" : error.message});
+							response.status(500);
+							return;
 						} else {
 							// Displaying the information
 							data.transactions = row.reverse();
@@ -164,6 +198,26 @@ app.post("/add", (request, response) => {
 		response.status(403);
 		return response.end("No task mentioned!");
 	}
+});
+//
+app.post("/edit", (request, response) => {
+	// Currently supported for editing student info only
+	// Getting the current student information
+	const student_id = request.body.student_id;
+	const student_name = request.body.student_name;
+	const student_class = request.body.student_class;
+	const student_board = request.body.student_board;
+
+	// Editing the required data
+	DbConn.run("UPDATE students SET name = ?, class = ?, board = ? WHERE id = ?", [student_name, student_class, student_board, student_id], (error) => {
+		if (error) {
+			// If there occurs an error
+			response.status(500);
+			return response.end("Database error!");
+		} else {
+			return response.end("true");
+		}
+	});
 });
 //
 app.post("/delete", (request, response) => {
