@@ -53,30 +53,28 @@
 	<!--  -->
 
 	<!-- Add student form -->
-	<div class="container-fluid" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px; margin: 2.5%; width: 95%;">
-		<form>
-			<h5>Add a new student</h5>
-			<hr>
-			<div class="mb-3">
-				<label for="addStudentFormName" class="form-label">Student's name</label>
-				<input type="email" class="form-control" id="addStudentFormName" aria-describedby="addStudentFormName" placeholder="Enter student's name">
-			</div>
-			<div class="mb-3">
-				<label for="addStudentFormClass" class="form-label">Class</label>
-				<input type="number" class="form-control" id="addStudentFormClass" step="1" value="5" max="12" min="0">
-			</div>
-			<div class="mb-3">
-				<label for="addStudentFormBoard" class="form-label">Board</label>
-				<select class="form-select form-select-sm" aria-label="Student's Board" id="addStudentFormBoard">
-					<option selected value="1">CBSE</option>
-					<option value="2">ICSE</option>
-					<option value="3">JAC</option>
-					<option value="3">OTHER</option>
-				</select>
-			</div>
-			<a class="btn btn-success" id="addStudentFormBtn">Add student</a>
-		</form>
-	</div>
+	<form class="container-fluid" id="addStudentForm" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px; margin: 2.5%; width: 95%;">
+		<h5>Add a new student</h5>
+		<hr>
+		<div class="mb-3">
+			<label for="addStudentFormName" class="form-label">Student's name</label>
+			<input type="email" class="form-control" id="addStudentFormName" aria-describedby="addStudentFormName" placeholder="Enter student's name">
+		</div>
+		<div class="mb-3">
+			<label for="addStudentFormClass" class="form-label">Class</label>
+			<input type="number" class="form-control" id="addStudentFormClass" step="1" value="5" max="12" min="0">
+		</div>
+		<div class="mb-3">
+			<label for="addStudentFormBoard" class="form-label">Board</label>
+			<select class="form-select form-select-sm" aria-label="Student's Board" id="addStudentFormBoard">
+				<option selected>CBSE</option>
+				<option>ICSE</option>
+				<option>JAC</option>
+				<option>OTHER</option>
+			</select>
+		</div>
+		<a class="btn btn-success" id="addStudentFormBtn">Add student</a>
+	</form>
 	<!--  -->
 
 	<!-- Recent transactions -->
@@ -127,21 +125,31 @@
 		// Fetching the form data
 		let student_name = document.getElementById("addStudentFormName").value;
 		const student_class = document.getElementById("addStudentFormClass").value;
-		let student_board = document.getElementById("addStudentFormBoard");
-		student_board = student_board.options[student_board.selectedIndex].innerHTML; // Getting the value selected by the user in the drop down list
+		let student_board = document.getElementById("addStudentFormBoard").value;
 
+		// Hiding the student entry form (Will be shown when after any errors if there occurs)
+		document.getElementById("addStudentForm").style.display = "none";
+		
 		// Validating the user input
 		if (student_name.length < 5) {
 			alert("Invalid student name!");
+			document.getElementById("addStudentForm").style.display = "block";
 			return;
 		}
 		if (student_class < 0 || student_class > 12) {
 			alert("Invalid student class!");
+			document.getElementById("addStudentForm").style.display = "block";
 			return;
 		}
 
 		// Auto-capitalizing the student name input
 		student_name = student_name.split(" ");
+		// Checking if the user entered the first as well as last name of the user
+		if (student_name.length < 2) {
+			alert("Enter the first name as well as last name.");
+			document.getElementById("addStudentForm").style.display = "block";
+			return;
+		}
 		for (let i = 0; i < student_name.length; i++) {
 			student_name[i] = (student_name[i].charAt(0).toUpperCase() + student_name[i].slice(1).toLowerCase());
 		}
@@ -160,8 +168,8 @@
 		}).catch(error => {
 			// If there occurs an error
 			alert(error);
-			window.location.reload();
 		});
+		document.getElementById("addStudentForm").style.display = "block";
 	});
 </script>
 

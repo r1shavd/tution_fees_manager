@@ -90,7 +90,7 @@
 					<option value="3">OTHER</option>
 				</select>
 			</div> -->
-			<a class="btn btn-success" id="editStudentFormBtn">Add student</a>
+			<a class="btn btn-primary" id="editStudentFormBtn">Add student</a>
 		</form>
 		<!--  -->
 
@@ -191,13 +191,18 @@
 		const month = document.getElementById("addTransactionFormMonth").value;
 		const year = document.getElementById("addTransactionFormYear").value;
 
+		// Hiding the addTransactionForm until there occurs an error
+		document.getElementById("addTransactionForm").style.display = "none";
+
 		// Validating the user input
 		if (month < 1 || month > 13) {
 			alert("Invalid month input!");
+			document.getElementById("addTransactionForm").style.display = "block";
 			return;
 		}
 		if (amount < 100) {
 			alert("Invalid amount input!");
+			document.getElementById("addTransactionForm").style.display = "block";
 			return;
 		}
 
@@ -214,7 +219,7 @@
 		}).catch(error => {
 			// If there occurs an error
 			alert(error);
-			window.location.reload();
+			document.getElementById("addTransactionForm").style.display = "none";
 		});
 	});
 
@@ -291,18 +296,28 @@
 		const student_class = document.getElementById("editStudentFormClass").value;
 		let student_board = "<%= data.board %>";
 
+		// Hiding the editStudentForm until there occurs an error
+		document.getElementById("editStudentForm").style.display = "none";
+
 		// Validating the user input
 		if (student_name.length < 5) {
 			alert("Invalid student name!");
+			document.getElementById("editStudentForm").style.display = "block";
 			return;
 		}
 		if (student_class < 0 || student_class > 12) {
 			alert("Invalid student class!");
+			document.getElementById("editStudentForm").style.display = "block";
 			return;
 		}
 
 		// Auto-capitalizing the student name input
 		student_name = student_name.split(" ");
+		if (student_name.length < 2) {
+			alert("Enter the first name as well as last name.");
+			document.getElementById("editStudentForm").style.display = "block";
+			return;
+		}
 		for (let i = 0; i < student_name.length; i++) {
 			student_name[i] = (student_name[i].charAt(0).toUpperCase() + student_name[i].slice(1).toLowerCase());
 		}
@@ -321,7 +336,7 @@
 		}).catch(error => {
 			// If there occurs an error
 			alert(error);
-			window.location.reload();
+			document.getElementById("editStudentForm").style.display = "block";
 		});
 	});
 </script>
