@@ -90,7 +90,7 @@
 					<option value="3">OTHER</option>
 				</select>
 			</div> -->
-			<a class="btn btn-primary" id="editStudentFormBtn">Add student</a>
+			<a class="btn btn-primary" id="editStudentFormBtn">Save info</a>
 		</form>
 		<!--  -->
 
@@ -160,7 +160,6 @@
 	<!--  -->
 
 	<!-- The form for transaction deletion -->
-	<% if (data.transactions.length != 0) { %>
 	<form class="container" id="dltTransactionForm" style="border: 0.5px solid lightgray; border-radius: 5px; padding: 10px; display: none;">
 		<h5>Transaction deletion confirmation!</h5>
 		<hr>
@@ -168,7 +167,6 @@
 		<input class="form-control" type="text" placeholder="..." aria-label="captcha" id="dltTransactionFormInput">
 		<a class="btn btn-danger" id="dltTransactionFormBtn" style="margin-top: 10px;">Delete</a>
 	</form>
-	<% } %>
 	<!--  -->
 
 	<!-- Scripts requried for boostrap -->
@@ -259,9 +257,9 @@
 
 	// Defining the dltTransactionFormBtn onclick event listener
 	document.getElementById("dltTransactionFormBtn").addEventListener("click", () => {
-		// Checking the captcha
+			// Checking the captcha
 		if (document.getElementById("dltTransactionFormInput").value == "12345678") {
-			// Sending the HTTP POST request
+				// Sending the HTTP POST request
 			fetch("/delete", {
 				method: "POST",
 				body: JSON.stringify({
@@ -272,7 +270,7 @@
 				(response.status == 200) ? alert("Transaction deleted!") : alert("Failed to delete the transaction!");
 				window.location.reload();
 			}).catch(error => {
-				// If there occurs an error
+					// If there occurs an error
 				alert(error);
 				window.location.reload();
 			});
@@ -280,7 +278,7 @@
 			alert("Incorrect captcha!");
 		}
 	});
-
+	
 	// Defining the javascript for the editStudentForm
 	// Default selection of the current board of the student (CURRENTLY NOT ADDING THE FEATURE TO CHANGE THE BOARD OF THE STUDENT)
 	// document.getElementById("editStudentFormBoard").selected
@@ -295,6 +293,8 @@
 		let student_name = document.getElementById("editStudentFormName").value;
 		const student_class = document.getElementById("editStudentFormClass").value;
 		let student_board = "<%= data.board %>";
+
+		console.log(student_name, student_class, student_board);
 
 		// Hiding the editStudentForm until there occurs an error
 		document.getElementById("editStudentForm").style.display = "none";
